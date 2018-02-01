@@ -24,10 +24,8 @@ const vis = new Vue({
       pathGenerator: null,
       gradientGenerator: null,
       line: null,
-      selected: {
-        origin: null,
-        destination: null
-      }
+      selected_origin: '',
+      selected_destination: '',
     }
   },
   computed: {
@@ -137,18 +135,11 @@ const vis = new Vue({
             .attr('cx', d => this.projection([d[1].long, d[1].lat])[0])
             .attr('cy', d => this.projection([d[1].long, d[1].lat])[1])
             .on('click', (d, i, el) => {
-              if (this.selected.origin == null) {
-                this.svg.selectAll(`.route`)
-                  .attr('stroke', 'grey')
-                  .attr("stroke-width", 0.5);
-
-                this.svg.selectAll(`.route.o-${d[0]}`)
-                  .attr('stroke', (_, i) => `url(#animate-gradient-${i})`)
-                  .attr("stroke-width", 1);
-                this.selected.origin = d;
+              if (this.selected_origin == '') {
+                this.selected_origin = d[0];
               } else {
-                if (this.selected.origin[1]['dest'].includes(d[0])) {
-                  this.selected.destination = d;
+                if (this.countries[this.selected_origin]['dest'].includes(d[0])) {
+                  this.selected_destination = d[0];
                 }
               }
 
@@ -189,6 +180,21 @@ const vis = new Vue({
         });
     },
     resize() {},
+    applySelection() {
+      this.svg.selectAll(`.route`)
+        .attr('stroke', 'grey')
+        .attr("stroke-width", 0.5);
+
+      const class_string = '.route' +
+        (this.selected_origin != '' ? `.o-${this.selected_origin}` : '') +
+        (this.selected_destination != '' ? `.d-${this.selected_destination}` : '');
+      console.log(class_string);
+      if (class_string != '.route') {
+        this.svg.selectAll(class_string)
+          .attr('stroke', (_, i) => `url(#animate-gradient-${i})`)
+          .attr("stroke-width", 1);
+      }
+    }
   },
   watch: {
     windowWidth: function (val) {
@@ -196,6 +202,17 @@ const vis = new Vue({
     },
     windowHeight: function (val) {
       this.resize();
+    },
+    selected_origin: function (val) {
+      if (val != '') {
+        if (!this.countries[val]['dest'].includes(this.selected_destination)) {
+          this.selected_destination = '';
+        }
+      }
+      this.applySelection();
+    },
+    selected_destination: function (val) {
+      this.applySelection();
     }
   }
 });

@@ -4,8 +4,8 @@ const perp = (p1, p2, d) => {
         y: p2.y - p1.y
     };
     const perp = {
-        x: (d ? 1 : -1) * diff.y,
-        y: (d ? -1 : 1) * diff.x
+        x: -1 * diff.y,
+        y: diff.x
     };
     const length = Math.sqrt(Math.pow(perp.x, 2) + Math.pow(perp.y, 2));
     return {
@@ -31,6 +31,11 @@ const pathGeneratorConst = (projection, path, coordinates) => {
         const midpoint = generated_path.node().getPointAtLength(length / 2);
         const almost_midpoint = generated_path.node().getPointAtLength(length * 0.45);
         const direction = perp(midpoint, almost_midpoint, d.origen > d.destino);
+        if (['ch', 'usa'].includes(d.origen) && ['ch', 'usa'].includes(d.destino)) {
+            console.log(d);
+            console.log(d.origen > d.destino);
+            console.log(direction);
+        }
         const altered_path = {
             type: "LineString",
             coordinates: [
@@ -62,8 +67,8 @@ const gradientGeneratorConst = (projection, path, coordinates) => {
         const midpoint = generated_path.node().getPointAtLength(length / 2);
         const almost_midpoint = generated_path.node().getPointAtLength(length * 0.45);
         let diff = {
-            x:   midpoint.x - almost_midpoint.x,
-            y:   midpoint.y - almost_midpoint.y
+            x: midpoint.x - almost_midpoint.x,
+            y: midpoint.y - almost_midpoint.y
         };
         const ratio = 100 / Math.max(Math.abs(diff.x), Math.abs(diff.y));
         diff.x *= ratio;
