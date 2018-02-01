@@ -74,6 +74,7 @@ const vis = new Vue({
           var svg = d3.select("#container");
 
           const pathGenerator = pathGeneratorConst(projection, path, countries);
+          const gradientGenerator = gradientGeneratorConst(projection, path, countries);
 
           var defs = svg.append("defs");
 
@@ -86,27 +87,38 @@ const vis = new Vue({
             .attr("id", (_, i) => `animate-gradient-${i}`)
 
 
-          var linearGradient = defs.append("linearGradient")
-            .attr("id", "animate-gradient") //unique id to reference the gradient by
-            .attr("x1", "0%")
-            .attr("y1", "0%")
-            .attr("x2", "100%")
-            .attr("y2", "0")
-            .attr("spreadMethod", "reflect");
+          const linearGradients = data.map((d, i) => gradientGenerator(defs, d, i));
+
+          // var linearGradient = defs.append("linearGradient")
+          //   .attr("id", "animate-gradient") //unique id to reference the gradient by
+          //   .attr("x1", "0%")
+          //   .attr("y1", "0%")
+          //   .attr("x2", "100%")
+          //   .attr("y2", "0%")
+          //   .attr("spreadMethod", "reflect");
 
           //A color palette that is 4 colors (the last 3 colors are the reverse of the start)
-          var colours = ["#0F4F99", "#326299", "#2989D8", "#99C4E5", "#2989D8", "#326299", "#0F4F99"];
+          // var colours = ["#0F4F99", "#326299", "#2989D8", "#99C4E5", "#2989D8", "#326299", "#0F4F99"];
+          var colours = ["#FDA860", "#FC8669", "#E36172", "#C64277", "#E36172", "#FC8669", "#FDA860"];
 
+
+          linearGradients.forEach(gradient => {
+            gradient.selectAll(".stop")
+              .data(colours)
+              .enter().append("stop")
+              .attr("offset", (_, i) => i / (colours.length - 1))
+              .attr("stop-color", d => d);
+          });
           //Append the colors evenly along the gradient
-          linearGradient.selectAll(".stop")
-            .data(colours)
-            .enter().append("stop")
-            .attr("offset", function (d, i) {
-              return i / (colours.length - 1);
-            })
-            .attr("stop-color", function (d) {
-              return d;
-            });
+          // linearGradient.selectAll(".stop")
+          //   .data(colours)
+          //   .enter().append("stop")
+          //   .attr("offset", function (d, i) {
+          //     return i / (colours.length - 1);
+          //   })
+          //   .attr("stop-color", function (d) {
+          //     return d;
+          //   });
 
           // linearGradient.append("animate")
           //     .attr("attributeName", "y1")
@@ -147,6 +159,12 @@ const vis = new Vue({
             .y(d => d[1])
             .curve(d3.curveBundle.beta(1));
 
+          const strokeScale = d3.scaleLinear()
+            .domain(d3.extent(data, d => d.overall.amount))
+            .range([0.5, 4]);
+
+          console.log(d3.extent(data, d => d.overall.amount))
+
           svg.selectAll(".route")
             .data(data)
             .enter()
@@ -154,14 +172,21 @@ const vis = new Vue({
             .attr("class", "route")
             .attr("id", (d, i) => `route-${i}`)
             .attr("d", d => line(pathGenerator(d)))
-            .attr("stroke-width", 1);
+            // .attr("stroke-width", d => strokeScale(d.overall.amount));
+            .attr("stroke-width", 0.5);
+
+          svg.selectAll(".route")
+            .attr('stroke', (_, i) => `url(#animate-gradient-${i})`);
+
 
 
           svg.selectAll('circle')
             .data(Object.values(countries))
             .enter()
             .append('circle')
-            .attr('r', 4)
+            .attr('r', 3)
+            .attr('fill', "#f2f2f2")
+            .attr('stroke', "#2989D8")
             .attr('cx', d => projection([d.long, d.lat])[0])
             .attr('cy', d => projection([d.long, d.lat])[1])
           // routes.forEach((r, i) => {
@@ -193,8 +218,6 @@ const vis = new Vue({
           //     r.direction = vector;
           //     //console.log(r.direction);
           // })
-
-          svg.selectAll(".route").attr('stroke', "url(#animate-gradient)");
 
           // var point = svg.append("g")
           //     .attr("class", "points")
