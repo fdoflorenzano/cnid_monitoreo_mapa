@@ -152,6 +152,12 @@ with open('datos_expandidos.json', encoding="utf-8") as file:
         pais_dict = {}
         for data in dataJson:
             pais_dict[data['id_pais']] = data
+        for pais in pais_dict.keys():
+            pais_dict[pais]["dest"] = []
+            for summ in summary:
+                if summ['origen'] == pais:
+                    pais_dict[pais]["dest"].append(summ["destino"])
+
         obj = {
             'summary': summary,
             'countries': pais_dict

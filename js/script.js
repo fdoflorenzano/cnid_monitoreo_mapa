@@ -8,9 +8,26 @@ const vis = new Vue({
         LEFT: 0,
         RIGHT: 0
       },
+      // colours : ["#0F4F99", "#326299", "#2989D8", "#99C4E5", "#2989D8", "#326299", "#0F4F99"],
+      colours: ["#FDA860", "#FC8669", "#E36172", "#C64277", "#E36172", "#FC8669", "#FDA860"],
       FILEPATH: 'data/datos_agregados.json',
       windowWidth: 0,
-      windowHeight: 0
+      windowHeight: 0,
+      countries: {},
+      data: [],
+      svg: null,
+      defs: null,
+      linearGradients: null,
+      path: null,
+      projection: null,
+      graticule: null,
+      pathGenerator: null,
+      gradientGenerator: null,
+      line: null,
+      selected: {
+        origin: null,
+        destination: null
+      }
     }
   },
   computed: {
@@ -35,237 +52,112 @@ const vis = new Vue({
   methods: {
     initialize() {
 
+      this.svg = d3.select("#container");
+      this.defs = this.svg.append("defs");
+      this.projection = d3.geoMercator()
+        .scale(this.width / 2 / Math.PI)
+        //.scale(100)
+        .translate([this.width / 2, this.height / 2])
+        .rotate([50, 0])
+        .precision(.1);
+      this.path = d3.geoPath().projection(this.projection);
+      this.graticule = d3.geoGraticule();
+
+
       d3.json("data/datos_agregados.json",
         (error, json) => {
-          const countries = json.countries;
-          const data = json.summary;
+          this.countries = json.countries;
+          this.data = json.summary;
 
-          // var routes = data.map(d => {
-          //     console.log(d)
-          //     return {
-          //         type: "LineString",
-          //         coordinates: [
-          //             [countries[d.origen].long, countries[d.origen].lat],
-          //             [countries[d.destino].long, countries[d.destino].lat]
-          //         ]
-          //     }
-          // });
-
-          var routes = [{
-            type: "LineString",
-            coordinates: [
-              [-70, -30],
-              [70, 30]
-            ]
-          }];
-
-          var projection = d3.geoMercator()
-            .scale(this.width / 2 / Math.PI)
-            //.scale(100)
-            .translate([this.width / 2, this.height / 2])
-            .rotate([50, 0])
-            .precision(.1);
-
-
-          var path = d3.geoPath().projection(projection);
-
-          var graticule = d3.geoGraticule();
-
-          var svg = d3.select("#container");
-
-          const pathGenerator = pathGeneratorConst(projection, path, countries);
-          const gradientGenerator = gradientGeneratorConst(projection, path, countries);
-
-          var defs = svg.append("defs");
-
-          //Append a linear horizontal gradient
-
-          defs.selectAll('linearGradient')
-            .data(routes)
-            .enter()
-            .append('linearGradient')
-            .attr("id", (_, i) => `animate-gradient-${i}`)
-
-
-          const linearGradients = data.map((d, i) => gradientGenerator(defs, d, i));
-
-          // var linearGradient = defs.append("linearGradient")
-          //   .attr("id", "animate-gradient") //unique id to reference the gradient by
-          //   .attr("x1", "0%")
-          //   .attr("y1", "0%")
-          //   .attr("x2", "100%")
-          //   .attr("y2", "0%")
-          //   .attr("spreadMethod", "reflect");
-
-          //A color palette that is 4 colors (the last 3 colors are the reverse of the start)
-          // var colours = ["#0F4F99", "#326299", "#2989D8", "#99C4E5", "#2989D8", "#326299", "#0F4F99"];
-          var colours = ["#FDA860", "#FC8669", "#E36172", "#C64277", "#E36172", "#FC8669", "#FDA860"];
-
-
-          linearGradients.forEach(gradient => {
+          this.pathGenerator = pathGeneratorConst(this.projection, this.path, this.countries);
+          this.gradientGenerator = gradientGeneratorConst(this.projection, this.path, this.countries);
+          this.linearGradients = this.data.map((d, i) => this.gradientGenerator(this.defs, d, i));
+          this.linearGradients.forEach(gradient => {
             gradient.selectAll(".stop")
-              .data(colours)
+              .data(this.colours)
               .enter().append("stop")
-              .attr("offset", (_, i) => i / (colours.length - 1))
+              .attr("offset", (_, i) => i / (this.colours.length - 1))
               .attr("stop-color", d => d);
           });
-          //Append the colors evenly along the gradient
-          // linearGradient.selectAll(".stop")
-          //   .data(colours)
-          //   .enter().append("stop")
-          //   .attr("offset", function (d, i) {
-          //     return i / (colours.length - 1);
-          //   })
-          //   .attr("stop-color", function (d) {
-          //     return d;
-          //   });
 
-          // linearGradient.append("animate")
-          //     .attr("attributeName", "y1")
-          //     .attr("values", "0%;100%")
-          //     .attr("dur", "3s")
-          //     .attr("repeatCount", "indefinite");
-
-          // linearGradient.append("animate")
-          //     .attr("attributeName", "y2")
-          //     .attr("values", "100%;200%")
-          //     .attr("dur", "3s")
-          //     .attr("repeatCount", "indefinite");
-
-
-
-          svg.append("defs").append("path")
+          this.svg.append("defs")
+            .append("path")
             .datum({
               type: "Sphere"
             })
             .attr("id", "sphere")
-            .attr("d", path);
+            .attr("d", this.path);
 
-          svg.append("use")
+          this.svg.append("use")
             .attr("class", "stroke")
             .attr("xlink:href", "#sphere");
 
-          svg.append("use")
+          this.svg.append("use")
             .attr("class", "fill")
             .attr("xlink:href", "#sphere");
 
-          svg.append("path")
-            .datum(graticule)
+          this.svg.append("path")
+            .datum(this.graticule)
             .attr("class", "graticule")
-            .attr("d", path);
+            .attr("d", this.path);
 
-          const line = d3.line()
+          this.line = d3.line()
             .x(d => d[0])
             .y(d => d[1])
             .curve(d3.curveBundle.beta(1));
 
+          // console.log(d3.extent(data, d => d.overall.amount))
+
           const strokeScale = d3.scaleLinear()
-            .domain(d3.extent(data, d => d.overall.amount))
+            .domain(d3.extent(this.data, d => d.overall.amount))
             .range([0.5, 4]);
 
-          console.log(d3.extent(data, d => d.overall.amount))
-
-          svg.selectAll(".route")
-            .data(data)
+          this.svg.selectAll(".route")
+            .data(this.data)
             .enter()
             .append("path")
-            .attr("class", "route")
+            .attr("class", d => `route o-${d.origen} d-${d.destino}`)
             .attr("id", (d, i) => `route-${i}`)
-            .attr("d", d => line(pathGenerator(d)))
+            .attr("d", d => this.line(this.pathGenerator(d)))
             // .attr("stroke-width", d => strokeScale(d.overall.amount));
             .attr("stroke-width", 0.5);
 
-          svg.selectAll(".route")
+          this.svg.selectAll(".route")
             .attr('stroke', (_, i) => `url(#animate-gradient-${i})`);
 
 
 
-          svg.selectAll('circle')
-            .data(Object.values(countries))
+          this.svg.selectAll('circle')
+            .data(Object.entries(this.countries))
             .enter()
             .append('circle')
-            .attr('r', 3)
+            .attr('r', 2)
             .attr('fill', "#f2f2f2")
             .attr('stroke', "#2989D8")
-            .attr('cx', d => projection([d.long, d.lat])[0])
-            .attr('cy', d => projection([d.long, d.lat])[1])
-          // routes.forEach((r, i) => {
+            .attr('cx', d => this.projection([d[1].long, d[1].lat])[0])
+            .attr('cy', d => this.projection([d[1].long, d[1].lat])[1])
+            .on('click', (d, i, el) => {
+              if (this.selected.origin == null) {
+                this.svg.selectAll(`.route`)
+                  .attr('stroke', 'grey')
+                  .attr("stroke-width", 0.5);
 
-          //     const d = d3.select(`#route-${i}`)
-          //         .attr('d');
-          //     const index1 = d.indexOf('L');
-          //     const index2 = d.lastIndexOf('L');
+                this.svg.selectAll(`.route.o-${d[0]}`)
+                  .attr('stroke', (_, i) => `url(#animate-gradient-${i})`)
+                  .attr("stroke-width", 1);
+                this.selected.origin = d;
+              } else {
+                if (this.selected.origin[1]['dest'].includes(d[0])) {
+                  this.selected.destination = d;
+                }
+              }
 
-          //     // console.log(d.substring(1, index1).split(',').map(s => parseFloat(s)));
-          //     // console.log(d.substring(index2 + 1, d.length).split(',').map(s => parseFloat(s)));
-
-          //     const p1 = d.substring(1, index1).split(',').map(s => parseFloat(s));
-          //     const p2 = d.substring(index2 + 1, d.length).split(',').map(s => parseFloat(s));
-          //     const diff = [p2[0] - p1[0], p2[1] - p2[0]];
-          //     const length = Math.sqrt(Math.pow(diff[0], 2) + Math.pow(diff[1], 2));
-          //     const direction = [100 * diff[0] / length, 100 * diff[1] / length];
-          //     let vector = [
-          //         [0, 0], direction
-          //     ];
-          //     if (direction[0] < 0) {
-          //         vector[0][0] += -direction[0];
-          //         vector[1][0] += -direction[0];
-          //     }
-          //     if (direction[1] < 0) {
-          //         vector[0][1] += -direction[1];
-          //         vector[1][1] += -direction[1];
-          //     }
-          //     r.direction = vector;
-          //     //console.log(r.direction);
-          // })
-
-          // var point = svg.append("g")
-          //     .attr("class", "points")
-          //     .selectAll("g")
-          //     .data(d3.entries(places))
-          //     .enter().append("g")
-          //     .attr("transform", function (d) {
-          //         return "translate(" + projection(d.value) + ")";
-          //     });
-
-          // point.append("circle")
-          //     .attr("r", 4.5);
-
-          // point.append("text")
-          //     .attr("y", 10)
-          //     .attr("dy", ".71em")
-          //     .text(function (d) {
-          //         return d.key;
-          //     });
+            })
+            .append('title')
+            .text(d => d[1]['pais_estudio'])
 
 
-
-          // svg.append("rect")
-          //     .attr("x", 0)
-          //     .attr("y", 0)
-          //     .attr("width", width)
-          //     .attr("height", height)
-          //     .style("fill", "url(#animate-gradient)");
-
-          d3.json("data/map.json",
-            function (error, world) {
-              if (error) throw error;
-
-              svg.insert("path", ".graticule")
-                .datum(topojson.feature(world, world.objects.land))
-                .attr("class", "land")
-                .attr("d", path);
-
-              svg.insert("path", ".graticule")
-                .datum(topojson.mesh(world, world.objects.countries, function (a, b) {
-                  return a !== b;
-                }))
-                .attr("class", "boundary")
-                .attr("d", path);
-            });
-
-          // d3.select(self.frameElement).style("height", this.height + "px");
-
+          this.renderMap();
         })
 
     },
@@ -278,7 +170,24 @@ const vis = new Vue({
     getData() {
       d3.json(this.FILEPATH, (error, data) => {});
     },
+    renderMap() {
+      d3.json("data/map.json",
+        (error, world) => {
+          if (error) throw error;
 
+          this.svg.insert("path", ".graticule")
+            .datum(topojson.feature(world, world.objects.land))
+            .attr("class", "land")
+            .attr("d", this.path);
+
+          this.svg.insert("path", ".graticule")
+            .datum(topojson.mesh(world, world.objects.countries, function (a, b) {
+              return a !== b;
+            }))
+            .attr("class", "boundary")
+            .attr("d", this.path);
+        });
+    },
     resize() {},
   },
   watch: {
