@@ -8,8 +8,8 @@ const vis = new Vue({
         LEFT: 0,
         RIGHT: 0
       },
-      // colours : ["#0F4F99", "#326299", "#2989D8", "#99C4E5", "#2989D8", "#326299", "#0F4F99"],
-      colours: ["#FDA860", "#FC8669", "#E36172", "#C64277", "#E36172", "#FC8669", "#FDA860"],
+      colours : ["#0F4F99", "#326299", "#2989D8", "#99C4E5", "#2989D8", "#326299", "#0F4F99"],
+      // colours: ["#FDA860", "#FC8669", "#E36172", "#C64277", "#E36172", "#FC8669", "#FDA860"],
       FILEPATH: 'data/datos_agregados.json',
       windowWidth: 0,
       windowHeight: 0,
@@ -140,7 +140,8 @@ const vis = new Vue({
             .attr("stroke-width", 0.5);
 
           this.svg.selectAll(".route")
-            .attr('stroke', (_, i) => `url(#animate-gradient-${i})`);
+            .attr('stroke', "#0F4F99");
+          // .attr('stroke', (_, i) => `url(#animate-gradient-${i})`);
 
           this.svg.selectAll('circle')
             .data(Object.entries(this.countries))
@@ -217,19 +218,27 @@ const vis = new Vue({
         (this.selected_destination != '' ? `.d-${this.selected_destination}` : '');
       if (class_string != '.route') {
         this.svg.selectAll(class_string)
-          .attr('stroke', (_, i) => `url(#animate-gradient-${i})`)
+          .transition()
+          .duration(100)
+          .attr('stroke', (d, i) => `url(#animate-gradient-${d.origen + d.destino})`)
           .attr("stroke-width", 2);
       } else {
         this.svg.selectAll(`.route`)
-          .attr('stroke', (_, i) => `url(#animate-gradient-${i})`)
+          .transition()
+          .duration(100)
+          .attr('stroke', "#0F4F99")
           .attr("stroke-width", 0.5);
       }
       if (this.selected_origin != '') {
         this.svg.selectAll('circle')
+          .transition()
+          .duration(100)
           .attr('r', d => d[0] == this.selected_origin ? 8 :
             (this.countries[this.selected_origin]['dest'].includes(d[0]) ? 3 : 0));
       } else {
         this.svg.selectAll('circle')
+          .transition()
+          .duration(100)
           .attr('r', d => d[1]['dest'].length > 0 ? 2 : 0);
       }
     }

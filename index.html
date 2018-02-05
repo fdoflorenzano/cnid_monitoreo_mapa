@@ -17,22 +17,24 @@
     <svg :width="width" :height="height" id="container" pointer-events="all">
     </svg>
     <div class="info_panel">
-      <select v-model="selected_origin">
-        <option value="">Seleccione origen</option>
-        <option v-for="country in possible_origins" :value="country[0]">
-          {{ country[1]["pais_estudio"] }}
-        </option>
-      </select>
-      <!-- <span>Selected: {{ selected_origin }}</span> -->
+      <div class="selects">
+        <select v-model="selected_origin">
+          <option value="">Seleccione origen</option>
+          <option v-for="country in possible_origins" :value="country[0]">
+            {{ country[1]["pais_estudio"] }}
+          </option>
+        </select>
+        <!-- <span>Selected: {{ selected_origin }}</span> -->
 
-      <select v-model="selected_destination">
-        <option value="">Seleccione destino</option>
-        <option v-for="country in selected_origin != '' ? countries[selected_origin]['dest'] : []" :value="country">
-          {{ countries[country]["pais_estudio"] }}
-        </option>
-      </select>
-      <!-- <span>Selected: {{ selected_destination }}</span> -->
-      <br>
+        <select v-model="selected_destination">
+          <option value="">Seleccione destino</option>
+          <option v-for="country in selected_origin != '' ? countries[selected_origin]['dest'] : []" :value="country">
+            {{ countries[country]["pais_estudio"] }}
+          </option>
+        </select>
+        <!-- <span>Selected: {{ selected_destination }}</span> -->
+      </div>
+
       <h1>
         {{info_title}}
       </h1>
