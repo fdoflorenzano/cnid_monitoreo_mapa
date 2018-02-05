@@ -40,6 +40,8 @@
       </h1>
       <info-bar :selected="selected" :ofos="ofos"></info-bar>
     </div>
+    <div class="tooltip" v-bind:class="{appear: tooltipped }">
+    </div>
   </div>
   <script src="js/info-bar-component.js"></script>
   <script src="js/script.js"></script>

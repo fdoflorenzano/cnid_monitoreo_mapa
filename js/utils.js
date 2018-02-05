@@ -112,7 +112,6 @@ const gradientGeneratorConst = (projection, path, coordinates) => {
             .attr("dur", "3s")
             .attr("repeatCount", "indefinite");
         return linearGradient;
-
     }
     return gradientGenerator;
 }

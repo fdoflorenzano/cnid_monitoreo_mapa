@@ -8,7 +8,7 @@ const vis = new Vue({
         LEFT: 0,
         RIGHT: 0
       },
-      colours : ["#0F4F99", "#2989D8", "#99C4E5", "#99C4E5", "#99C4E5", "#2989D8", "#0F4F99"],
+      colours: ["#0F4F99", "#2989D8", "#99C4E5", "#99C4E5", "#99C4E5", "#2989D8", "#0F4F99"],
       // colours: ["#FDA860", "#FC8669", "#E36172", "#C64277", "#E36172", "#FC8669", "#FDA860"],
       FILEPATH: 'data/datos_agregados.json',
       windowWidth: 0,
@@ -28,6 +28,8 @@ const vis = new Vue({
       line: null,
       selected_origin: '',
       selected_destination: '',
+      tooltip: null,
+      tooltipped: false,
     }
   },
   computed: {
@@ -65,6 +67,7 @@ const vis = new Vue({
     initialize() {
 
       this.svg = d3.select("#container");
+      this.tooltip = d3.select(".tooltip");
       this.defs = this.svg.append("defs");
       this.projection = d3.geoMercator()
         .scale(this.width / 2 / Math.PI)
@@ -155,9 +158,15 @@ const vis = new Vue({
             .attr('cy', d => this.projection([d[1].long, d[1].lat])[1])
             .on('mouseenter', (d, i, el) => {
               d3.select(el[i]).attr('r', 8);
+              this.tooltipped = true;
+              this.tooltip
+                .style("left", (d3.event.clientX - 20) + "px")
+                .style("top", (d3.event.clientY + 16) + "px")
+                .text(d[1]['pais_estudio']);
             })
             .on('mouseleave', (d, i, el) => {
               d3.select(el[i]).attr('r', 2);
+              this.tooltipped = false;
             })
             .on('click', (d, i, el) => {
               if (this.selected_origin == '' && this.countries[d[0]]['dest'].length > 0) {
@@ -170,9 +179,7 @@ const vis = new Vue({
                 }
               }
 
-            })
-            .append('title')
-            .text(d => d[1]['pais_estudio'])
+            });
 
 
           this.renderMap();

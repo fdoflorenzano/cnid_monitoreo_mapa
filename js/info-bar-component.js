@@ -3,8 +3,8 @@ Vue.component('info-bar', {
     <div id="info_bar">
         <div class="container" v-if="selected != null">
             <div class="selectors">
-                <a class="selector" v-on:click="select('overall')">Todos</a>
-                <a class="selector" v-for="category in categories" v-on:click="select(category.key)">{{category.full}}</a>
+                <a class="selector" v-on:click="select('overall')" v-bind:class="{active: 'overall' == selected_view}">Todos</a>
+                <a class="selector" v-for="category in categories" v-on:click="select(category.key)" v-bind:class="{active: category.key == selected_view}">{{category.full}}</a>
             </div>
             <h3>{{number}}</h3>
             

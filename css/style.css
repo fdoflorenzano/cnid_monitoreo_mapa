@@ -5,6 +5,15 @@
   position: absolute;
 }
 
+div.tooltip {
+  position: absolute;
+  opacity: 0;
+}
+
+div.tooltip.appear {
+  opacity: 1;
+}
+
 .stroke {
   fill: none;
   stroke: #000;
