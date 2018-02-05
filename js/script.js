@@ -45,6 +45,9 @@ const vis = new Vue({
     selected() {
       return this.selected_origin != '' && this.selected_destination != '' ?
         this.summary[`${this.selected_origin}-${this.selected_destination}`] : null;
+    },
+    possible_origins() {
+      return Object.entries(this.countries).filter(c => c[1]['dest'].length > 0);
     }
   },
   mounted() {
@@ -112,11 +115,6 @@ const vis = new Vue({
             .attr("class", "graticule")
             .attr("d", this.path);
 
-          this.line = d3.line()
-            .x(d => d[0])
-            .y(d => d[1])
-            .curve(d3.curveBundle.beta(1));
-
           // console.log(d3.extent(data, d => d.overall.amount))
 
           const strokeScale = d3.scaleLinear()
@@ -137,7 +135,7 @@ const vis = new Vue({
             .append("path")
             .attr("class", d => `route o-${d.origen} d-${d.destino}`)
             .attr("id", (d, i) => `route-${i}`)
-            .attr("d", d => this.line(this.pathGenerator(d)))
+            .attr("d", d => this.pathGenerator(d))
             // .attr("stroke-width", d => strokeScale(d.overall.amount));
             .attr("stroke-width", 0.5);
 
@@ -148,13 +146,14 @@ const vis = new Vue({
             .data(Object.entries(this.countries))
             .enter()
             .append('circle')
-            .attr('r', 2)
+            .attr('id', d => 'c' + d[0])
+            .attr('r', d => d[1]['dest'].length > 0 ? 2 : 0)
             .attr('fill', "#f2f2f2")
             .attr('stroke', "#2989D8")
             .attr('cx', d => this.projection([d[1].long, d[1].lat])[0])
             .attr('cy', d => this.projection([d[1].long, d[1].lat])[1])
             .on('mouseenter', (d, i, el) => {
-              d3.select(el[i]).attr('r', 10);
+              d3.select(el[i]).attr('r', 8);
             })
             .on('mouseleave', (d, i, el) => {
               d3.select(el[i]).attr('r', 2);
@@ -224,6 +223,14 @@ const vis = new Vue({
         this.svg.selectAll(`.route`)
           .attr('stroke', (_, i) => `url(#animate-gradient-${i})`)
           .attr("stroke-width", 0.5);
+      }
+      if (this.selected_origin != '') {
+        this.svg.selectAll('circle')
+          .attr('r', d => d[0] == this.selected_origin ? 8 :
+            (this.countries[this.selected_origin]['dest'].includes(d[0]) ? 3 : 0));
+      } else {
+        this.svg.selectAll('circle')
+          .attr('r', d => d[1]['dest'].length > 0 ? 2 : 0);
       }
     }
   },

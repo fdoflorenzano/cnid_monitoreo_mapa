@@ -14,6 +14,11 @@ const perp = (p1, p2, d) => {
     }
 }
 
+const line = d3.line()
+            .x(d => d[0])
+            .y(d => d[1])
+            .curve(d3.curveBundle.beta(1));
+
 const pathGeneratorConst = (projection, path, coordinates) => {
     const proj = projection;
     const p = path;
@@ -26,6 +31,7 @@ const pathGeneratorConst = (projection, path, coordinates) => {
                 [coor[d.destino].long, coor[d.destino].lat]
             ]
         };
+
         const generated_path = d3.select('svg').append('path').attr('d', p(object)).remove();
         const length = generated_path.node().getTotalLength();
         const midpoint = generated_path.node().getPointAtLength(length / 2);
@@ -39,7 +45,14 @@ const pathGeneratorConst = (projection, path, coordinates) => {
             ]
         };
         // console.log(p(altered_path).replace(/M|Z/, "").split("L").map((d) =>  d.split(",")));
-        return p(altered_path).replace(/M|Z/, "").split("L").map((d) => d.split(","));
+        let string = p(altered_path);
+        string = string.substring(1,string.length);
+        string.split('M').map( m => m.split("L").map((d) => d.split(",")));
+        let result = '';
+        string.split('M').map( m => m.split("L").map((d) => d.split(","))).forEach(element => {
+            result += line(element);
+        });
+        return result;
 
     }
     return pathGenerator;

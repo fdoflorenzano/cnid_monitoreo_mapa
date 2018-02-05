@@ -3,11 +3,11 @@
 
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-  <script src='js/utils.js' charset='utf-8'></script>
   <script src='https://cdnjs.cloudflare.com/ajax/libs/d3/4.12.2/d3.js' charset='utf-8'></script>
   <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
   <script src="https://unpkg.com/topojson@3"></script>
   <script src="https://unpkg.com/vue"></script>
+  <script src='js/utils.js' charset='utf-8'></script>
   <link rel="stylesheet" href="css/style.css" />
   <link rel="stylesheet" href="css/info-bar.css" />
 </head>
@@ -19,7 +19,7 @@
     <div class="info_panel">
       <select v-model="selected_origin">
         <option value="">Seleccione origen</option>
-        <option v-for="country in Object.entries(countries)" :value="country[0]">
+        <option v-for="country in possible_origins" :value="country[0]">
           {{ country[1]["pais_estudio"] }}
         </option>
       </select>
