@@ -8,7 +8,7 @@ const vis = new Vue({
         LEFT: 0,
         RIGHT: 0
       },
-      colours : ["#0F4F99", "#326299", "#2989D8", "#99C4E5", "#2989D8", "#326299", "#0F4F99"],
+      colours : ["#0F4F99", "#2989D8", "#99C4E5", "#99C4E5", "#99C4E5", "#2989D8", "#0F4F99"],
       // colours: ["#FDA860", "#FC8669", "#E36172", "#C64277", "#E36172", "#FC8669", "#FDA860"],
       FILEPATH: 'data/datos_agregados.json',
       windowWidth: 0,
