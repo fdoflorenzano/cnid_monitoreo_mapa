@@ -7,11 +7,15 @@
 
 div.tooltip {
   position: absolute;
+  background: white;
+  border: 0px;
+  border-radius: 8px;
+  text-align: center;
   opacity: 0;
 }
 
 div.tooltip.appear {
-  opacity: 1;
+  opacity: 0.9;
 }
 
 .stroke {
