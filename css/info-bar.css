@@ -1,0 +1,4 @@
+#info_bar .container .institutions {
+    max-height: 20vh;
+    overflow-y: auto;
+}

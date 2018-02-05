@@ -1,5 +1,5 @@
 pais_estudio,id_pais,lat,long
-Chile,ch,-33.45,-70.66
+Chile,ch,-38.63,-72.158
 México,me,19.419,-99.145
 Estados Unidos,usa,39.01,-117.72
 Rusia,ru,55.75,37.61
@@ -16,7 +16,7 @@ Alemania,al,50.73,7.099
 Reino Unido,uk,51.50,-0.127
 Japón,ja,35.68,139.77
 Venezuela,ve,10.5,-66.93
-Brasil,bra,-15.79,-47.88
+Brasil,bra,-7.118,-58.447
 Italia,ita,41.89,12.48
 Gran Bretaña,gb,51.50,-0.127
 Australia,aus,-35.3,149.14

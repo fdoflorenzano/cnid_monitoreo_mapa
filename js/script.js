@@ -14,6 +14,8 @@ const vis = new Vue({
       windowWidth: 0,
       windowHeight: 0,
       countries: {},
+      summary: {},
+      ofos: {},
       data: [],
       svg: null,
       defs: null,
@@ -35,6 +37,15 @@ const vis = new Vue({
     width() {
       return this.windowWidth * 0.65;
     },
+    info_title() {
+      return this.selected_origin != '' && this.selected_destination != '' ?
+        `${this.countries[this.selected_origin]['pais_estudio']} a ${this.countries[this.selected_destination]['pais_estudio']}` :
+        'Seleccione origen y destino para ver detalle de flujo de estudios.'
+    },
+    selected() {
+      return this.selected_origin != '' && this.selected_destination != '' ?
+        this.summary[`${this.selected_origin}-${this.selected_destination}`] : null;
+    }
   },
   mounted() {
     this.$nextTick(function () {
@@ -65,7 +76,9 @@ const vis = new Vue({
       d3.json("data/datos_agregados.json",
         (error, json) => {
           this.countries = json.countries;
-          this.data = json.summary;
+          this.data = Object.values(json.summary);
+          this.summary = json.summary;
+          this.ofos = json.ofos;
 
           this.pathGenerator = pathGeneratorConst(this.projection, this.path, this.countries);
           this.gradientGenerator = gradientGeneratorConst(this.projection, this.path, this.countries);
@@ -110,6 +123,14 @@ const vis = new Vue({
             .domain(d3.extent(this.data, d => d.overall.amount))
             .range([0.5, 4]);
 
+          this.svg.append('rect')
+            .attr('width', this.width)
+            .attr('height', this.height)
+            .attr('fill', "none")
+            .on("click", () => {
+              this.selected_origin = '';
+            });
+
           this.svg.selectAll(".route")
             .data(this.data)
             .enter()
@@ -123,8 +144,6 @@ const vis = new Vue({
           this.svg.selectAll(".route")
             .attr('stroke', (_, i) => `url(#animate-gradient-${i})`);
 
-
-
           this.svg.selectAll('circle')
             .data(Object.entries(this.countries))
             .enter()
@@ -134,9 +153,17 @@ const vis = new Vue({
             .attr('stroke', "#2989D8")
             .attr('cx', d => this.projection([d[1].long, d[1].lat])[0])
             .attr('cy', d => this.projection([d[1].long, d[1].lat])[1])
+            .on('mouseenter', (d, i, el) => {
+              d3.select(el[i]).attr('r', 10);
+            })
+            .on('mouseleave', (d, i, el) => {
+              d3.select(el[i]).attr('r', 2);
+            })
             .on('click', (d, i, el) => {
-              if (this.selected_origin == '') {
+              if (this.selected_origin == '' && this.countries[d[0]]['dest'].length > 0) {
                 this.selected_origin = d[0];
+              } else if (this.selected_origin == d[0]) {
+                this.selected_origin = '';
               } else {
                 if (this.countries[this.selected_origin]['dest'].includes(d[0])) {
                   this.selected_destination = d[0];
@@ -181,6 +208,7 @@ const vis = new Vue({
     },
     resize() {},
     applySelection() {
+
       this.svg.selectAll(`.route`)
         .attr('stroke', 'grey')
         .attr("stroke-width", 0.5);
@@ -188,11 +216,14 @@ const vis = new Vue({
       const class_string = '.route' +
         (this.selected_origin != '' ? `.o-${this.selected_origin}` : '') +
         (this.selected_destination != '' ? `.d-${this.selected_destination}` : '');
-      console.log(class_string);
       if (class_string != '.route') {
         this.svg.selectAll(class_string)
           .attr('stroke', (_, i) => `url(#animate-gradient-${i})`)
-          .attr("stroke-width", 1);
+          .attr("stroke-width", 2);
+      } else {
+        this.svg.selectAll(`.route`)
+          .attr('stroke', (_, i) => `url(#animate-gradient-${i})`)
+          .attr("stroke-width", 0.5);
       }
     }
   },
@@ -208,6 +239,8 @@ const vis = new Vue({
         if (!this.countries[val]['dest'].includes(this.selected_destination)) {
           this.selected_destination = '';
         }
+      } else {
+        this.selected_destination = '';
       }
       this.applySelection();
     },

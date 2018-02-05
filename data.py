@@ -118,7 +118,10 @@ def aggregate(od_dict):
             obj['postdoc'] = detail(list( filter( lambda x: x['categoria'] == '5', od_dict[k])))
             obj['overall'] = detail( od_dict[k])
             summary.append(obj)
-    return summary
+    summary_dict = {}
+    for s in summary:
+        summary_dict[s['origen']+'-'+s['destino']] = s
+    return summary_dict
 
 
 with open('datos_expandidos.json', encoding="utf-8") as file:
@@ -154,13 +157,32 @@ with open('datos_expandidos.json', encoding="utf-8") as file:
             pais_dict[data['id_pais']] = data
         for pais in pais_dict.keys():
             pais_dict[pais]["dest"] = []
-            for summ in summary:
+            for summ in summary.values():
                 if summ['origen'] == pais:
                     pais_dict[pais]["dest"].append(summ["destino"])
 
-        obj = {
-            'summary': summary,
-            'countries': pais_dict
-        }
+        with open('ofos_1.csv', newline='', encoding="utf-8") as csvofos:
+            ofos = csv.reader(csvofos)
+            data = []
+            rownum = 0
+            for row in ofos:
+                if rownum == 0:
+                    header = row
+                else:
+                    colnum = 0
+                    datum = {}
+                    for col in row:
+                        datum[header[colnum]] = col
+                        colnum += 1
+                    data.append(datum)
+                rownum += 1
+            ofosJson = {}
+            for d in data:
+                ofosJson[d['id_ofos1']] = d['ofos_1']
+            obj = {
+                'summary': summary,
+                'countries': pais_dict,
+                'ofos': ofosJson
+            }
         with open('datos_agregados.json', 'w', encoding="utf-8") as f:
             json.dump(obj, f, ensure_ascii=False)

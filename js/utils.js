@@ -31,11 +31,6 @@ const pathGeneratorConst = (projection, path, coordinates) => {
         const midpoint = generated_path.node().getPointAtLength(length / 2);
         const almost_midpoint = generated_path.node().getPointAtLength(length * 0.45);
         const direction = perp(midpoint, almost_midpoint, d.origen > d.destino);
-        if (['ch', 'usa'].includes(d.origen) && ['ch', 'usa'].includes(d.destino)) {
-            console.log(d);
-            console.log(d.origen > d.destino);
-            console.log(direction);
-        }
         const altered_path = {
             type: "LineString",
             coordinates: [

@@ -5,9 +5,11 @@
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
   <script src='js/utils.js' charset='utf-8'></script>
   <script src='https://cdnjs.cloudflare.com/ajax/libs/d3/4.12.2/d3.js' charset='utf-8'></script>
+  <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
   <script src="https://unpkg.com/topojson@3"></script>
   <script src="https://unpkg.com/vue"></script>
   <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/info-bar.css" />
 </head>
 
 <body>
@@ -16,22 +18,28 @@
     </svg>
     <div class="info_panel">
       <select v-model="selected_origin">
-        <option value="">Please select origen</option>
+        <option value="">Seleccione origen</option>
         <option v-for="country in Object.entries(countries)" :value="country[0]">
           {{ country[1]["pais_estudio"] }}
         </option>
       </select>
-      <span>Selected: {{ selected_origin }}</span>
+      <!-- <span>Selected: {{ selected_origin }}</span> -->
 
       <select v-model="selected_destination">
-        <option value="">Please select destination</option>
+        <option value="">Seleccione destino</option>
         <option v-for="country in selected_origin != '' ? countries[selected_origin]['dest'] : []" :value="country">
           {{ countries[country]["pais_estudio"] }}
         </option>
       </select>
-      <span>Selected: {{ selected_destination }}</span>
+      <!-- <span>Selected: {{ selected_destination }}</span> -->
+      <br>
+      <h1>
+        {{info_title}}
+      </h1>
+      <info-bar :selected="selected" :ofos="ofos"></info-bar>
     </div>
   </div>
+  <script src="js/info-bar-component.js"></script>
   <script src="js/script.js"></script>
 </body>
 

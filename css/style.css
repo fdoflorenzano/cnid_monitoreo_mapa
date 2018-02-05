@@ -2,6 +2,7 @@
   height: 90vh;
   width: 30%;
   display: inline-block;
+  position: absolute;
 }
 
 .stroke {
